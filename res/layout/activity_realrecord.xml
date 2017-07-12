@@ -3,6 +3,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:background="@android:color/white"
+    android:gravity="center"
     android:orientation="vertical" >
     
   <include
@@ -15,6 +16,25 @@
             layout="@layout/item_hsview_real_record" />
 <!--     The PullToRefreshListView replaces a standard ListView widget. -->
 
+<LinearLayout
+    android:id="@+id/update_info"
+    android:layout_width="match_parent"
+    android:layout_height="30dp"
+    android:background="@android:color/background_dark"
+    android:gravity="center|center_horizontal"
+    android:orientation="horizontal"
+    android:visibility="gone" >
+
+    <TextView
+        android:id="@+id/tv_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"     
+        android:gravity="center_vertical"
+        android:text="没有最新数据，请稍后！"
+        android:textColor="@android:color/white" >
+        
+    </TextView>    
+</LinearLayout>
     <com.handmark.pulltorefresh.library.PullToRefreshListView        
         android:id="@+id/pull_refresh_list"
         android:layout_width="fill_parent"

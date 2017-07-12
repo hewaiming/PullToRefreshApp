@@ -26,6 +26,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -35,6 +37,8 @@ import android.app.ListActivity;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -44,11 +48,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ArrayAdapter;
 import android.widget.HorizontalScrollView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
@@ -78,12 +85,18 @@ public final class PullToRefreshRealRecActivity extends ListActivity {
 	private List<Map<String, Object>> JXList = new ArrayList<Map<String, Object>>(); // 记录号名
 	private HSView_RealRecordAdapter realRec_Adapter = null;
 	private RelativeLayout mHead;
+	private LinearLayout updateLayout;
+	private TextView tvInfo;
+	private Handler handler = new Handler(Looper.getMainLooper());
 
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_realrecord);
+		updateLayout = (LinearLayout) findViewById(R.id.update_info);
+		tvInfo = (TextView) findViewById(R.id.tv_info);
 		initJXList();
 		mPullRefreshListView = (PullToRefreshListView) findViewById(R.id.pull_refresh_list);
 		init_HSView();
@@ -92,8 +105,12 @@ public final class PullToRefreshRealRecActivity extends ListActivity {
 		mPullRefreshListView.setOnRefreshListener(new OnRefreshListener<ListView>() {
 			@Override
 			public void onRefresh(PullToRefreshBase<ListView> refreshView) {
-			/*	String label = DateUtils.formatDateTime(getApplicationContext(), System.currentTimeMillis(),
-						DateUtils.FORMAT_SHOW_TIME | DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_ABBREV_ALL);*/
+				/*
+				 * String label =
+				 * DateUtils.formatDateTime(getApplicationContext(),
+				 * System.currentTimeMillis(), DateUtils.FORMAT_SHOW_TIME |
+				 * DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_ABBREV_ALL);
+				 */
 
 				long dateTaken = System.currentTimeMillis();
 
@@ -221,7 +238,17 @@ public final class PullToRefreshRealRecActivity extends ListActivity {
 		@Override
 		protected void onPostExecute(String data) {
 			if (data.equals("")) {
-				Toast.makeText(getApplicationContext(), "没有获取到最新[实时记录]数据，请稍后再试！", Toast.LENGTH_SHORT).show();
+				tvInfo.setText("没有获取到最新[实时记录]数据，请稍后再试！");
+				updateLayout.setVisibility(View.VISIBLE);
+				handler.postDelayed(new Runnable() {
+
+					@Override
+					public void run() {
+						updateLayout.setVisibility(View.GONE);
+					}
+				}, 2000);
+				// Toast.makeText(getApplicationContext(),
+				// "没有获取到最新[实时记录]数据，请稍后再试！", Toast.LENGTH_SHORT).show();
 
 			} else {
 				listBean = new ArrayList<RealRecord>();
@@ -230,6 +257,14 @@ public final class PullToRefreshRealRecActivity extends ListActivity {
 				for (RealRecord tmp : listBean) {
 					mListItems.addFirst(tmp);
 				}
+				tvInfo.setText("获取到最新[实时记录]:共" + listBean.size() + "条");
+				updateLayout.setVisibility(View.VISIBLE);
+				handler.postDelayed(new Runnable() {
+					@Override
+					public void run() {
+						updateLayout.setVisibility(View.GONE);
+					}
+				}, 2000);
 			}
 			realRec_Adapter.notifyDataSetChanged();
 			// Call onRefreshComplete when the list has been refreshed.
